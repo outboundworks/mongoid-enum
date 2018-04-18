@@ -4,8 +4,14 @@ require "mongoid/enum/configuration"
 
 module Mongoid
   module Enum
+
     extend ActiveSupport::Concern
     module ClassMethods
+      @@enums = {}
+
+      def enums
+        @@enums
+      end
 
       def enum(name, values, options = {})
         field_name = :"#{Mongoid::Enum.configuration.field_name_prefix}#{name}"
@@ -18,6 +24,8 @@ module Mongoid
         create_validations field_name, values, options
         define_value_scopes_and_accessors field_name, values, options
         define_field_accessor name, field_name, options
+
+        add_to_enums_list name, values
       end
 
       private
@@ -28,6 +36,10 @@ module Mongoid
           :required => true,
           :validate => true
         }
+      end
+
+      def add_to_enums_list(name, values)
+        @@enums[name] = values
       end
 
       def set_values_constant(name, values)
